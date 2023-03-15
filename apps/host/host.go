@@ -7,13 +7,25 @@ type Service interface {
 	// 录入主机
 	CreateHost(context.Context, *Host) (*Host, error)
 	// 查询主机列表
-	QueryHost(context.Context, *QueryHostRequest)
+	QueryHost(context.Context, *QueryHostRequest) (*HostSet, error)
 	// 查询主机详情
-	DescribeHost(context.Context, *QueryHostRequest)
+	DescribeHost(context.Context, *QueryHostRequest) (*Host, error)
 	// 主机更新
-	UpdateHost(context.Context, *UpdateHostRequest)
+	UpdateHost(context.Context, *UpdateHostRequest) (*Host, error)
 	// 主机删除
-	DeleteHost(context.Context, *DeleteHostRequest)
+	DeleteHost(context.Context, *DeleteHostRequest) (*Host, error)
+}
+
+type HostSet struct {
+	Items []*Host
+	Total int
+}
+
+func NewHost() *Host {
+	return &Host{
+		Resource: &Resource{},
+		Describe: &Describe{},
+	}
 }
 
 // Host模型的定义
