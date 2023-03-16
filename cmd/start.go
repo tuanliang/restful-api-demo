@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
+	"github.com/tuanliang/restful-api-demo/apps"
 	"github.com/tuanliang/restful-api-demo/apps/host/http"
 	"github.com/tuanliang/restful-api-demo/apps/host/impl"
 	"github.com/tuanliang/restful-api-demo/conf"
@@ -30,10 +31,14 @@ var StartCmd = &cobra.Command{
 		}
 
 		// 加载Host Service实体类
-		service := impl.NewHostServiceImpl()
+		// service := impl.NewHostServiceImpl()
+
+		// 注册HostService的实例到IOC
+		apps.HostService = impl.NewHostServiceImpl()
 
 		// 通过Host api Handler提供 HTTP RestFul接口
-		api := http.NewHostHTTPHandler(service)
+		api := http.NewHostHTTPHandler()
+		api.Config()
 
 		// 提供一个Gin Router
 		g := gin.Default()
