@@ -1,18 +1,27 @@
 package cmd
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/tuanliang/restful-api-demo/version"
 )
 
 var vers bool
 
 var RootCmd = &cobra.Command{
-	Use:   "demo",
-	Short: "demo 后端API",
-	Long:  "demo 后端API",
+	Use:   "demo-api",
+	Short: "demo-api 后端API",
+	Long:  "demo-api 后端API",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return errors.New("no flags find")
+		if vers {
+			fmt.Println(version.FullVersion())
+			return nil
+		}
+		return nil
 	},
+}
+
+func init() {
+	RootCmd.PersistentFlags().BoolVarP(&vers, "version", "v", false, "print demo-api version")
 }
