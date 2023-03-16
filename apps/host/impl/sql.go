@@ -19,8 +19,17 @@ const (
 		private_ip
 	)
 	VALUES
-		(?,?,?,?,?,?,?,?,?,?,?,?,?,?);`
-	InsertDescribeSQL = `INSERT INTO host ( resource_id, cpu, memory, gpu_amount, gpu_spec, os_type, os_name, serial_number )
+		(?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+	`
+
+	// INSERT INTO `host` ( resource_id, cpu, memory, gpu_amount, gpu_spec, os_type, os_name, serial_number )
+	// VALUES
+	// ( "111", 1, 2048, 1, 'n', 'linux', 'centos8', '00000' );
+	InsertDescribeSQL = `
+	INSERT INTO host ( resource_id, cpu, memory, gpu_amount, gpu_spec, os_type, os_name, serial_number )
 	VALUES
-		( ?,?,?,?,?,?,?,? );`
+		( ?,?,?,?,?,?,?,? );
+	`
+
+	queryHostSQL = `SELECT * FROM resource as r LEFT JOIN host h ON r.id=h.resource_id`
 )

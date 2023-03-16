@@ -11,6 +11,7 @@ import (
 
 // 从Toml格式的配置文件加载配置
 func LoadConfigFromToml(filePath string) error {
+	fmt.Println("开始加载文件")
 	config = NewDefaultConfig()
 	// 读取toml格式的配置
 	_, err := toml.DecodeFile(filePath, config)

@@ -11,18 +11,18 @@ import (
 
 // 把host对象保存到数据内
 func (i *HostServiceImpl) save(ctx context.Context, ins *host.Host) error {
-
 	var (
 		err error
 	)
 
 	// 把数据入库到 resource表和host表
 	// 一次需要往2个表录入数据, 我们需要2个操作 要么都成功，要么都失败, 事务的逻辑
+	fmt.Println("i:", i.db)
 	tx, err := i.db.BeginTx(ctx, nil)
+	fmt.Println("err:", err)
 	if err != nil {
 		return fmt.Errorf("start tx error ,%s", err)
 	}
-
 	// 通过defer处理事务提交方式
 	// 1.无报错，则commit事务
 	// 2.有报错，则Rollback事务

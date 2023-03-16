@@ -19,11 +19,15 @@ var (
 
 func TestCreate(t *testing.T) {
 	should := assert.New(t)
-
 	ins := host.NewHost()
+	ins.Id = "ins-02"
 	ins.Name = "test"
-	ins, err := service.CreateHost(context.Background(), ins)
+	ins.Region = "hanghzou"
+	ins.Type = "sm1"
+	ins.CPU = 1
+	ins.Memory = 2048
 
+	ins, err := service.CreateHost(context.Background(), ins)
 	if should.NoError(err) {
 		fmt.Println(ins)
 	}
@@ -33,7 +37,8 @@ func init() {
 	// 测试用例的配置文件
 	err := conf.LoadConfigFromToml("../../../etc/demo.toml")
 	if err != nil {
-		panic(err)
+		fmt.Println("配置文件错误")
+		//panic(err)
 	}
 
 	// 需要初始化全局Logger

@@ -67,7 +67,7 @@ func NewDefaultMySQL() *MySQL {
 		Port:        "3306",
 		UserName:    "root",
 		Password:    "root",
-		Database:    "demo",
+		Database:    "gotest1",
 		MaxOpenConn: 10,
 		MaxIdleConn: 5,
 	}
@@ -100,11 +100,11 @@ func (m *MySQL) GetDB() *sql.DB {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	if db != nil {
+	if db == nil {
 		// 如果实例不存在，就初始化一个新的实例
 		conn, err := m.getDBConn()
 		if err != nil {
-			panic(err)
+			fmt.Println("getdb 错误:", err)
 		}
 		db = conn
 	}

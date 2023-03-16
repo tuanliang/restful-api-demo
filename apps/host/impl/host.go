@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/tuanliang/restful-api-demo/apps/host"
 )
@@ -16,16 +17,18 @@ func (i *HostServiceImpl) CreateHost(ctx context.Context, ins *host.Host) (*host
 
 	// 校验数据合法性
 	if err := ins.Validate(); err != nil {
+		fmt.Println("不合法", err)
 		return nil, err
 	}
 
 	// 默认值填充
 	ins.InjectDefault()
-
+	fmt.Println("ctx:", ctx)
+	fmt.Println("ins:", ins)
+	fmt.Println("i1：", i.db)
 	if err := i.save(ctx, ins); err != nil {
 		return nil, err
 	}
-
 	return ins, nil
 }
 
