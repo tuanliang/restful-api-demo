@@ -3,6 +3,7 @@ package apps
 import (
 	"fmt"
 
+	"github.com/gin-gonic/gin"
 	"github.com/tuanliang/restful-api-demo/apps/host"
 )
 
@@ -12,29 +13,64 @@ import (
 
 var (
 	HostService host.Service
-	svcs        = map[string]Service{}
+	implAPPs    = map[string]ImplService{}
+	ginAPPs     = map[string]GinService{}
 )
 
-func Registry(svc Service) {
+func GetImpl(name string) interface{} {
+	for k, v := range implAPPs {
+		if k == name {
+			return v
+		}
+	}
+
+	return nil
+}
+
+func RegistryImpl(svc ImplService) {
 	// 服务实例注册到svcs map当中
-	if _, ok := svcs[svc.Name()]; ok {
+	if _, ok := implAPPs[svc.Name()]; ok {
 		panic(fmt.Sprintf("service %s has registried", svc.Name()))
 	}
-	svcs[svc.Name()] = svc
+	implAPPs[svc.Name()] = svc
 
 	if v, ok := svc.(host.Service); ok {
 		HostService = v
 	}
 }
+func RegistryGin(svc GinService) {
+	// 服务实例注册到svcs map当中
+	if _, ok := ginAPPs[svc.Name()]; ok {
+		panic(fmt.Sprintf("service %s has registried", svc.Name()))
+	}
+	ginAPPs[svc.Name()] = svc
+}
 
 // 用于初始化，注册到IOC容器里面的所有服务
-func Init() {
-	for _, v := range svcs {
+func InitImpl() {
+	for _, v := range implAPPs {
 		v.Config()
 	}
 }
+func InitGin(r gin.IRouter) {
+	// 先初始化好所有对象
+	for _, v := range ginAPPs {
+		v.Config()
+	}
+	// 完成Http Handler的注册
+	for _, v := range ginAPPs {
+		v.Registry(r)
+	}
+}
 
-type Service interface {
+type ImplService interface {
+	Config()
+	Name() string
+}
+
+// 注册由gin编写的handler
+type GinService interface {
+	Registry(r gin.IRouter)
 	Config()
 	Name() string
 }

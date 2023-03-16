@@ -36,7 +36,7 @@ type HostServiceImpl struct {
 // 自动执行注册逻辑
 func init() {
 	// apps.HostService = impl
-	apps.Registry(impl)
+	apps.RegistryImpl(impl)
 }
 func (i *HostServiceImpl) Config() {
 	i.l = zap.L().Named("Host")

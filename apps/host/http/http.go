@@ -6,9 +6,7 @@ import (
 	"github.com/tuanliang/restful-api-demo/apps/host"
 )
 
-func NewHostHTTPHandler() *Handler {
-	return &Handler{}
-}
+var handler = &Handler{}
 
 // 通过写一个实体类，把内部的接口通过hTTp协议暴露出去
 // 需要依赖内部接口的实现
@@ -18,11 +16,17 @@ type Handler struct {
 }
 
 func (h *Handler) Config() {
-	if apps.HostService == nil {
-		panic("dependence host service is nil")
-	}
-	h.svc = apps.HostService
+
+	h.svc = apps.GetImpl(host.AppName).(host.Service)
 }
 func (h *Handler) Registry(r gin.IRouter) {
 	r.POST("/hosts", h.createHost)
+}
+func (h *Handler) Name() string {
+	return host.AppName
+}
+
+// 完成Http Handler注册
+func init() {
+	apps.RegistryGin(handler)
 }

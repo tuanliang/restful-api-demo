@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tuanliang/restful-api-demo/apps"
 	_ "github.com/tuanliang/restful-api-demo/apps/all"
-	"github.com/tuanliang/restful-api-demo/apps/host/http"
 	"github.com/tuanliang/restful-api-demo/conf"
 )
 
@@ -37,15 +36,13 @@ var StartCmd = &cobra.Command{
 		// apps.HostService = impl.NewHostServiceImpl()
 		// 采用	_ "github.com/tuanliang/restful-api-demo/apps/host/impl" 完成注册
 
-		apps.Init()
-
-		// 通过Host api Handler提供 HTTP RestFul接口
-		api := http.NewHostHTTPHandler()
-		api.Config()
+		// apps.Init()
+		apps.InitImpl()
 
 		// 提供一个Gin Router
 		g := gin.Default()
-		api.Registry(g)
+		// 注册IOC的所有http handler
+		apps.InitGin(g)
 
 		if err := g.Run(conf.C().App.HttpAddr()); err != nil {
 			return err
