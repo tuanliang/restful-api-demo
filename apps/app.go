@@ -52,6 +52,15 @@ func InitImpl() {
 		v.Config()
 	}
 }
+
+// 已经加载完成的Gin App有哪些
+func LoadedGinApps() (names []string) {
+	for k := range ginAPPs {
+		names = append(names, k)
+	}
+	return
+}
+
 func InitGin(r gin.IRouter) {
 	// 先初始化好所有对象
 	for _, v := range ginAPPs {

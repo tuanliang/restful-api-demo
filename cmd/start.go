@@ -1,15 +1,18 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 
-	"github.com/gin-gonic/gin"
+	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
 	"github.com/spf13/cobra"
 	"github.com/tuanliang/restful-api-demo/apps"
 	_ "github.com/tuanliang/restful-api-demo/apps/all"
 	"github.com/tuanliang/restful-api-demo/conf"
+	"github.com/tuanliang/restful-api-demo/protocol"
 )
 
 var (
@@ -45,17 +48,44 @@ var StartCmd = &cobra.Command{
 		// apps.Init()
 		apps.InitImpl()
 
-		// 提供一个Gin Router
-		g := gin.Default()
-		// 注册IOC的所有http handler
-		apps.InitGin(g)
+		// // 提供一个Gin Router
+		// g := gin.Default()
+		// // 注册IOC的所有http handler
+		// apps.InitGin(g)
+		// g.Run(conf.C().App.HttpAddr())
 
-		if err := g.Run(conf.C().App.HttpAddr()); err != nil {
-			return err
-		}
-
-		return errors.New("no flags find")
+		svc := newManager()
+		ch := make(chan os.Signal, 1)
+		signal.Notify(ch, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGHUP, syscall.SIGINT)
+		go svc.WaitStop(ch)
+		return svc.Start()
 	},
+}
+
+func newManager() *manager {
+	return &manager{
+		http: protocol.NewHttpService(),
+		l:    zap.L().Named("CLI"),
+	}
+}
+func (m *manager) Start() error {
+	return m.http.Start()
+}
+func (m *manager) WaitStop(ch <-chan os.Signal) {
+	for v := range ch {
+		switch v {
+		default:
+			m.l.Infof("received singnal:%s", v)
+			m.http.Stop()
+		}
+	}
+}
+
+// 用于管理所有需要启动的服务
+// 1.HTTP服务的启动
+type manager struct {
+	http *protocol.HttpService
+	l    logger.Logger
 }
 
 // log 为全局变量, 只需要load 即可全局可用户, 依赖全局配置先初始化
