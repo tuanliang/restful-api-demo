@@ -13,6 +13,5 @@ database = "gotest1"
 
 [log]
 level = "debug"
-dir = "logs"
 format = "text"
 to = "stdout"
