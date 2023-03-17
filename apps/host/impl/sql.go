@@ -32,4 +32,8 @@ const (
 	`
 
 	QueryHostSQL = `SELECT r.*,h.cpu,h.memory,h.gpu_spec,h.gpu_amount,h.os_type,h.os_name,h.serial_number FROM resource as r LEFT JOIN host as h ON r.id=h.resource_id`
+
+	updateResourceSQL = `UPDATE resource SET vendor=?,region=?,expire_at=?,name=?,description=? WHERE id = ?`
+
+	updateHostSQL = `UPDATE host SET cpu=?,memory=? WHERE resource_id = ?`
 )

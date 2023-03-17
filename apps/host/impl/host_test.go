@@ -53,6 +53,21 @@ func TestDescribe(t *testing.T) {
 		fmt.Println(ins.Id)
 	}
 }
+func TestUpdate(t *testing.T) {
+	should := assert.New(t)
+	// req := host.NewPatchUpdateHostRequest("ins-05")
+	req := host.NewPutUpdateHostRequest("ins-05")
+	req.Name = "修改测试01"
+	req.Region = "rg 02"
+	req.Type = "small"
+	req.CPU = 1
+	req.Memory = 2048
+	req.Description = "测试更新"
+	ins, err := service.UpdateHost(context.Background(), req)
+	if should.NoError(err) {
+		fmt.Println(ins.Id)
+	}
+}
 func init() {
 	// 测试用例的配置文件
 	err := conf.LoadConfigFromToml("../../../etc/demo.toml")

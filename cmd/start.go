@@ -56,6 +56,7 @@ var StartCmd = &cobra.Command{
 
 		svc := newManager()
 		ch := make(chan os.Signal, 1)
+		// defer close(ch)
 		signal.Notify(ch, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGHUP, syscall.SIGINT)
 		go svc.WaitStop(ch)
 		return svc.Start()
