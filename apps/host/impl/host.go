@@ -78,8 +78,31 @@ func (i *HostServiceImpl) QueryHost(ctx context.Context, req *host.QueryHostRequ
 	return set, nil
 }
 
-func (i *HostServiceImpl) DescribeHost(ctx context.Context, req *host.QueryHostRequest) (*host.Host, error) {
-	return nil, nil
+func (i *HostServiceImpl) DescribeHost(ctx context.Context, req *host.DescribeHostRequest) (*host.Host, error) {
+	b := sqlbuilder.NewBuilder(QueryHostSQL)
+	b.Where("r.id = ?", req.Id)
+
+	querySQL, args := b.Build()
+	i.l.Debugf("describe sql: %s, args: %v", querySQL, args)
+	fmt.Println()
+	stmt, err := i.db.PrepareContext(ctx, querySQL)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	ins := host.NewHost()
+	err = stmt.QueryRowContext(ctx, args...).Scan(
+		&ins.Id, &ins.Vendor, &ins.Region, &ins.CreateAt, &ins.ExpireAt,
+		&ins.Type, &ins.Name, &ins.Description, &ins.Status, &ins.UpdateAt, &ins.SyncAt,
+		&ins.Account, &ins.PublicIP, &ins.PrivateIP, &ins.CPU, &ins.Memory, &ins.GPUSpec,
+		&ins.GPUAmount, &ins.OSType, &ins.OSName, &ins.SerialNumber,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return ins, nil
 }
 
 func (i *HostServiceImpl) UpdateHost(ctx context.Context, req *host.UpdateHostRequest) (*host.Host, error) {

@@ -88,6 +88,16 @@ type Describe struct {
 	SerialNumber string `json:"serial_number"`              // 序列号
 }
 
+type DescribeHostRequest struct {
+	Id string
+}
+
+func NewDescribeHostRequestWithId(id string) *DescribeHostRequest {
+	return &DescribeHostRequest{
+		Id: id,
+	}
+}
+
 type QueryHostRequest struct {
 	PageSize   int    `json:"page_size"`
 	PageNumber int    `json:"page_number"`
