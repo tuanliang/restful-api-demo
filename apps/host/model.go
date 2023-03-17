@@ -1,6 +1,8 @@
 package host
 
 import (
+	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -10,9 +12,18 @@ var (
 	validate = validator.New()
 )
 
+func NewHostSet() *HostSet {
+	return &HostSet{
+		Items: []*Host{},
+	}
+}
+func (s *HostSet) Add(item *Host) {
+	s.Items = append(s.Items, item)
+}
+
 type HostSet struct {
-	Items []*Host
-	Total int
+	Total int     `json:"total"`
+	Items []*Host `json:"items"`
 }
 
 func NewHost() *Host {
@@ -78,6 +89,40 @@ type Describe struct {
 }
 
 type QueryHostRequest struct {
+	PageSize   int    `json:"page_size"`
+	PageNumber int    `json:"page_number"`
+	Keywords   string `json:"kws"`
+}
+
+func NewQueryHostRequest() *QueryHostRequest {
+	return &QueryHostRequest{
+		PageSize:   5,
+		PageNumber: 1,
+	}
+}
+func NewQueryHostFromHTTP(r *http.Request) *QueryHostRequest {
+	req := NewQueryHostRequest()
+	// query string
+	qs := r.URL.Query()
+	pss := qs.Get("page_size")
+	if pss != "" {
+		req.PageSize, _ = strconv.Atoi(pss)
+	}
+	pns := qs.Get("page_number")
+	if pns != "" {
+		req.PageNumber, _ = strconv.Atoi(pns)
+	}
+	kwss := qs.Get("kws")
+	if kwss != "" {
+		req.Keywords = kwss
+	}
+	return req
+}
+func (req *QueryHostRequest) GetPageSize() uint {
+	return uint(req.PageSize)
+}
+func (req *QueryHostRequest) Offset() int64 {
+	return int64((req.PageNumber - 1) * req.PageSize)
 }
 
 type UpdateHostRequest struct {

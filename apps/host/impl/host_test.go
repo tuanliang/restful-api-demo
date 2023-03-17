@@ -31,8 +31,19 @@ func TestCreate(t *testing.T) {
 	if should.NoError(err) {
 		fmt.Println(ins)
 	}
-}
 
+}
+func TestQuery(t *testing.T) {
+	should := assert.New(t)
+	req := host.NewQueryHostRequest()
+	req.Keywords = "接口测试"
+	set, err := service.QueryHost(context.Background(), req)
+	if should.NoError(err) {
+		for i := range set.Items {
+			fmt.Println(set.Items[i].Id)
+		}
+	}
+}
 func init() {
 	// 测试用例的配置文件
 	err := conf.LoadConfigFromToml("../../../etc/demo.toml")
@@ -47,4 +58,5 @@ func init() {
 
 	// host service 的具体实现
 	service = impl.NewHostServiceImpl()
+
 }

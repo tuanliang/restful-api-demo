@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/infraboard/mcube/logger"
+	"github.com/infraboard/mcube/sqlbuilder"
 	"github.com/tuanliang/restful-api-demo/apps/host"
 )
 
@@ -32,7 +33,49 @@ func (i *HostServiceImpl) CreateHost(ctx context.Context, ins *host.Host) (*host
 }
 
 func (i *HostServiceImpl) QueryHost(ctx context.Context, req *host.QueryHostRequest) (*host.HostSet, error) {
-	return nil, nil
+	b := sqlbuilder.NewBuilder(QueryHostSQL)
+	if req.Keywords != "" {
+		b.Where("r.`name` LIKE ? OR r.description LIKE ? OR r.private_ip LIKE ? OR r.public_ip LIKE ?",
+			"%"+req.Keywords+"%", "%"+req.Keywords+"%", req.Keywords+"%", req.Keywords+"%")
+	}
+	b.Limit(req.Offset(), req.GetPageSize())
+	querySQL, args := b.Build()
+	i.l.Debugf("query sql: %s, args: %v", querySQL, args)
+	fmt.Println()
+	stmt, err := i.db.PrepareContext(ctx, querySQL)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+	rows, err := stmt.QueryContext(ctx, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	set := host.NewHostSet()
+	for rows.Next() {
+		// 每扫描一行，就需要读取出来
+		ins := host.NewHost()
+		if err := rows.Scan(&ins.Id, &ins.Vendor, &ins.Region, &ins.CreateAt, &ins.ExpireAt,
+			&ins.Type, &ins.Name, &ins.Description, &ins.Status, &ins.UpdateAt, &ins.SyncAt,
+			&ins.Account, &ins.PublicIP, &ins.PrivateIP, &ins.CPU, &ins.Memory, &ins.GPUSpec,
+			&ins.GPUAmount, &ins.OSType, &ins.OSName, &ins.SerialNumber); err != nil {
+			return nil, err
+		}
+		set.Add(ins)
+	}
+	countSql, args := b.BuildCount()
+	i.l.Errorf("count sql: %s, args: %v\n", countSql, args)
+	countStmt, err := i.db.PrepareContext(ctx, countSql)
+	if err != nil {
+		return nil, err
+	}
+	defer countStmt.Close()
+	if err := countStmt.QueryRowContext(ctx, args...).Scan(&set.Total); err != nil {
+		return nil, err
+	}
+	return set, nil
 }
 
 func (i *HostServiceImpl) DescribeHost(ctx context.Context, req *host.QueryHostRequest) (*host.Host, error) {
