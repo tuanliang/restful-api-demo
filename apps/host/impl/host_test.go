@@ -68,6 +68,15 @@ func TestUpdate(t *testing.T) {
 		fmt.Println(ins.Id)
 	}
 }
+func TestPathch(t *testing.T) {
+	should := assert.New(t)
+	req := host.NewPatchUpdateHostRequest("ins-08")
+	req.Description = "patch测试更新"
+	ins, err := service.UpdateHost(context.Background(), req)
+	if should.NoError(err) {
+		fmt.Println(ins.Id)
+	}
+}
 func init() {
 	// 测试用例的配置文件
 	err := conf.LoadConfigFromToml("../../../etc/demo.toml")

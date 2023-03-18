@@ -8,6 +8,7 @@ require (
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-playground/validator/v10 v10.10.0
 	github.com/go-sql-driver/mysql v1.7.0
+	github.com/imdario/mergo v0.3.14
 	github.com/infraboard/mcube v1.9.7
 	github.com/spf13/cobra v1.3.0
 	github.com/stretchr/testify v1.7.0

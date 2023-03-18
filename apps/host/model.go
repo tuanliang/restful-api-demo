@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/imdario/mergo"
 )
 
 var (
@@ -54,13 +55,15 @@ func (h *Host) Put(obj *Host) error {
 
 // 对象局部更新
 func (h *Host) Patch(obj *Host) error {
-	if obj.Name != "" {
-		h.Name = obj.Name
-	}
-	if obj.CPU != 0 {
-		h.CPU = obj.CPU
-	}
-	return nil
+	// if obj.Name != "" {
+	// 	h.Name = obj.Name
+	// }
+	// if obj.CPU != 0 {
+	// 	h.CPU = obj.CPU
+	// }
+	// mergo.mergewithoverwrite 当为空值的时候就不修改
+	return mergo.MergeWithOverwrite(h, obj)
+
 }
 
 func (h *Host) Validate() error {
