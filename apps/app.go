@@ -3,6 +3,7 @@ package apps
 import (
 	"fmt"
 
+	"github.com/emicklei/go-restful/v3"
 	"github.com/gin-gonic/gin"
 	"github.com/tuanliang/restful-api-demo/apps/host"
 	"google.golang.org/grpc"
@@ -16,9 +17,10 @@ var (
 	HostService host.Service
 
 	// 维护当前所有的服务
-	implAPPs = map[string]ImplService{}
-	ginAPPs  = map[string]GinService{}
-	grpcApps = map[string]GrpcService{}
+	implAPPs    = map[string]ImplService{}
+	ginAPPs     = map[string]GinService{}
+	restfulAPPs = map[string]RestfulService{}
+	grpcApps    = map[string]GrpcService{}
 )
 
 func GetImpl(name string) interface{} {
@@ -49,6 +51,23 @@ func RegistryGrpc(svc GrpcService) {
 	}
 	grpcApps[svc.Name()] = svc
 }
+
+func GetGrpcApp(name string) interface{} {
+	for k, v := range grpcApps {
+		if k == name {
+			return v
+		}
+	}
+
+	return nil
+}
+func RegistryRestful(svc RestfulService) {
+	// 服务实例注册到svcs map当中
+	if _, ok := restfulAPPs[svc.Name()]; ok {
+		panic(fmt.Sprintf("service %s has registried", svc.Name()))
+	}
+	restfulAPPs[svc.Name()] = svc
+}
 func RegistryGin(svc GinService) {
 	// 服务实例注册到svcs map当中
 	if _, ok := ginAPPs[svc.Name()]; ok {
@@ -76,9 +95,17 @@ func LoadedGinApps() (names []string) {
 	return
 }
 
-// 已经加载完成的Gin App有哪些
+// 已经加载完成的Grpc App有哪些
 func LoadedGrpcApps() (names []string) {
 	for k := range grpcApps {
+		names = append(names, k)
+	}
+	return
+}
+
+// 已经加载完成的Gin App有哪些
+func LoadedRestApps() (names []string) {
+	for k := range restfulAPPs {
 		names = append(names, k)
 	}
 	return
@@ -95,6 +122,20 @@ func InitGrpc(r *grpc.Server) {
 	}
 }
 
+// 注册restful web service
+// restful 有一个Container，类似于一个Root Router
+func InitRestful(r *restful.Container) {
+	// 先初始化好所有对象
+	for _, v := range restfulAPPs {
+		v.Config()
+	}
+	// 完成Http Handler的注册
+	for _, v := range restfulAPPs {
+		ws := new(restful.WebService)
+		r.Add(ws)
+		v.Registry(ws)
+	}
+}
 func InitGin(r gin.IRouter) {
 	// 先初始化好所有对象
 	for _, v := range ginAPPs {
@@ -120,6 +161,12 @@ type GinService interface {
 
 type GrpcService interface {
 	Registry(r *grpc.Server)
+	Config()
+	Name() string
+}
+
+type RestfulService interface {
+	Registry(ws *restful.WebService)
 	Config()
 	Name() string
 }

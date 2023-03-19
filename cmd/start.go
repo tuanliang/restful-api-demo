@@ -63,6 +63,9 @@ var StartCmd = &cobra.Command{
 		// grpc服务启动在后台
 		go svc.grpc.Start()
 
+		// restful服务启动在后台
+		go svc.rest.Start()
+
 		return svc.Start()
 	},
 }
@@ -70,6 +73,7 @@ var StartCmd = &cobra.Command{
 // 有2个服务，1个是http，1个是grpc
 func newManager() *manager {
 	return &manager{
+		rest: protocol.NewRestfulService(),
 		http: protocol.NewHttpService(),
 		grpc: protocol.NewGRPCService(),
 		l:    zap.L().Named("CLI"),
@@ -96,6 +100,7 @@ func (m *manager) WaitStop(ch <-chan os.Signal) {
 // 用于管理所有需要启动的服务
 // 1.HTTP服务的启动
 type manager struct {
+	rest *protocol.RestfulService
 	http *protocol.HttpService
 	grpc *protocol.GRPCService
 	l    logger.Logger
