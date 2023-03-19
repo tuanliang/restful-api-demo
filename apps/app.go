@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/tuanliang/restful-api-demo/apps/host"
+	"google.golang.org/grpc"
 )
 
 // IOC 容器层：管理所有的服务的实例
@@ -13,8 +14,11 @@ import (
 
 var (
 	HostService host.Service
-	implAPPs    = map[string]ImplService{}
-	ginAPPs     = map[string]GinService{}
+
+	// 维护当前所有的服务
+	implAPPs = map[string]ImplService{}
+	ginAPPs  = map[string]GinService{}
+	grpcApps = map[string]GrpcService{}
 )
 
 func GetImpl(name string) interface{} {
@@ -38,6 +42,13 @@ func RegistryImpl(svc ImplService) {
 		HostService = v
 	}
 }
+func RegistryGrpc(svc GrpcService) {
+	// 服务实例注册到svcs map当中
+	if _, ok := grpcApps[svc.Name()]; ok {
+		panic(fmt.Sprintf("service %s has registried", svc.Name()))
+	}
+	grpcApps[svc.Name()] = svc
+}
 func RegistryGin(svc GinService) {
 	// 服务实例注册到svcs map当中
 	if _, ok := ginAPPs[svc.Name()]; ok {
@@ -48,6 +59,10 @@ func RegistryGin(svc GinService) {
 
 // 用于初始化，注册到IOC容器里面的所有服务
 func InitImpl() {
+	for _, v := range grpcApps {
+		v.Config()
+	}
+
 	for _, v := range implAPPs {
 		v.Config()
 	}
@@ -59,6 +74,25 @@ func LoadedGinApps() (names []string) {
 		names = append(names, k)
 	}
 	return
+}
+
+// 已经加载完成的Gin App有哪些
+func LoadedGrpcApps() (names []string) {
+	for k := range grpcApps {
+		names = append(names, k)
+	}
+	return
+}
+
+func InitGrpc(r *grpc.Server) {
+	// 先初始化好所有对象
+	for _, v := range grpcApps {
+		v.Config()
+	}
+	// 完成Http Handler的注册
+	for _, v := range grpcApps {
+		v.Registry(r)
+	}
 }
 
 func InitGin(r gin.IRouter) {
@@ -80,6 +114,12 @@ type ImplService interface {
 // 注册由gin编写的handler
 type GinService interface {
 	Registry(r gin.IRouter)
+	Config()
+	Name() string
+}
+
+type GrpcService interface {
+	Registry(r *grpc.Server)
 	Config()
 	Name() string
 }
